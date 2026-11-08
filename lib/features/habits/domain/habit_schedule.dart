@@ -92,13 +92,17 @@ class HabitScheduler {
     return until != null && !day.isAfter(until);
   }
 
-  /// Whether the habit is due on [day]: started, not archived, not paused,
-  /// and the schedule in force on that day includes it.
-  bool isScheduledOn(LocalDay day) =>
-      !habit.isArchived &&
-      hasStartedBy(day) &&
-      !isPausedOn(day) &&
-      scheduleOn(day).isDueOn(day);
+  /// Whether the habit was due on [day] by its own rules (started, not
+  /// paused, and the schedule in force that day includes it), regardless of
+  /// whether it is archived now. Used for history and statistics.
+  bool isDueOn(LocalDay day) =>
+      hasStartedBy(day) && !isPausedOn(day) && scheduleOn(day).isDueOn(day);
+
+  /// Whether the habit should appear on the list for [day]: due and not
+  /// archived.
+  bool isScheduledOn(LocalDay day) => !habit.isArchived && isDueOn(day);
+
+  LocalDay get startDate => _startDate;
 }
 
 /// Short human-readable schedule summary, e.g. "Every day", "Mon, Wed, Fri",
