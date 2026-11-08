@@ -25,7 +25,10 @@ void main() {
     });
 
     test('weekdays handles Sunday (7)', () {
-      const s = HabitSchedule(frequency: HabitFrequency.weekdays, weekdays: {7});
+      const s = HabitSchedule(
+        frequency: HabitFrequency.weekdays,
+        weekdays: {7},
+      );
       expect(week.where(s.isDueOn).single, const LocalDay(2026, 11, 15));
     });
 
