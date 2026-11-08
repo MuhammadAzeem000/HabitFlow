@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,6 +9,7 @@ import '../../../app/routes.dart';
 import '../../../core/utilities/current_day.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../habits/application/habit_providers.dart';
+import '../../tracking/application/completion_controller.dart';
 import '../application/today_providers.dart';
 import 'widgets/progress_header.dart';
 import 'widgets/today_habit_card.dart';
@@ -76,6 +80,7 @@ class HomeScreen extends ConsumerWidget {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: TodayHabitCard(
                       entry: entry,
+                      onToggle: () => _toggle(context, ref, entry),
                       onOpen: () =>
                           context.push(Routes.editHabit(entry.habit.id)),
                     ),
@@ -85,5 +90,47 @@ class HomeScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  /// Instant, optimistic toggle with an Undo snackbar. Never waits on
+  /// anything but the local database.
+  Future<void> _toggle(
+    BuildContext context,
+    WidgetRef ref,
+    TodayEntry entry,
+  ) async {
+    final controller = ref.read(completionControllerProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
+    final habit = entry.habit;
+    final previous = entry.status;
+    final nowDone = !entry.isDone;
+
+    unawaited(HapticFeedback.selectionClick());
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            nowDone ? '${habit.name} — done' : '${habit.name} — not done',
+          ),
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () => controller.setStatus(habit.id, previous),
+          ),
+        ),
+      );
+
+    try {
+      await controller.toggle(habit.id, current: previous);
+    } on Object {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Couldn’t save that. Please try again.'),
+          ),
+        );
+    }
   }
 }
