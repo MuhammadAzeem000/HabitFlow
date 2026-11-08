@@ -10,4 +10,5 @@ abstract final class Routes {
   static String editHabit(String id) => '/habit/$id/edit';
 
   static const challenges = '/challenges';
+  static const plans = '/plans';
 }
