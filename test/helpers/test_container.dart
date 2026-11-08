@@ -9,12 +9,18 @@ import 'package:habitflow/core/utilities/current_day.dart';
 ProviderContainer createTestContainer(
   AppDatabase db, {
   DateTime Function()? clock,
+  Duration Function()? monotonicClock,
 }) {
   TestWidgetsFlutterBinding.ensureInitialized();
+  var ticks = 0;
   final container = ProviderContainer(
     overrides: [
       appDatabaseProvider.overrideWithValue(db),
       if (clock != null) clockProvider.overrideWithValue(clock),
+      // Default: one second between taps, so no tap counts as a double tap.
+      monotonicClockProvider.overrideWithValue(
+        monotonicClock ?? () => Duration(seconds: ++ticks),
+      ),
     ],
   );
   addTearDown(container.dispose);
