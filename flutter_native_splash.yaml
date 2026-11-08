@@ -1,0 +1,9 @@
+# Launch screen (shown while the app starts). Regenerate after changes:
+#   dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#2E7D6B"
+  image: "assets/brand/icon_foreground.png"
+  android_12:
+    color: "#2E7D6B"
+    image: "assets/brand/icon_foreground.png"
+  web: false
