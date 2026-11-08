@@ -1,0 +1,85 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:habitflow/app/app.dart';
+import 'package:habitflow/core/database/app_database.dart';
+import 'package:habitflow/core/database/database_providers.dart';
+import 'package:habitflow/core/utilities/local_day.dart';
+import 'package:habitflow/features/habits/data/habit_repository.dart';
+import 'package:habitflow/features/habits/domain/habit_draft.dart';
+import 'package:habitflow/features/settings/application/settings_controller.dart';
+import 'package:habitflow/features/settings/data/settings_repository.dart';
+
+import 'helpers/test_database.dart';
+
+void main() {
+  late AppDatabase db;
+
+  setUp(() => db = createTestDatabase());
+  tearDown(() => db.close());
+
+  Future<void> pumpApp(WidgetTester tester) async {
+    final settings = await tester.runAsync(() => SettingsRepository(db).load());
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          initialSettingsProvider.overrideWithValue(settings!),
+        ],
+        child: const HabitFlowApp(),
+      ),
+    );
+    // Let the local database stream deliver its first result.
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('launches to Today with an empty state from local data', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    expect(find.text('No habits yet'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+  });
+
+  testWidgets('shows habits stored in the local database', (tester) async {
+    await tester.runAsync(
+      () => HabitRepository(db).createHabit(
+        const HabitDraft(
+          name: 'Drink water',
+          frequency: HabitFrequency.daily,
+          startDate: LocalDay(2026, 11, 1),
+        ),
+      ),
+    );
+    await pumpApp(tester);
+    expect(find.text('Drink water'), findsOneWidget);
+  });
+
+  testWidgets('navigates between all tabs', (tester) async {
+    await pumpApp(tester);
+    for (final (tab, title) in [
+      ('Habits', 'Manage your habits'),
+      ('Calendar', 'Your history'),
+      ('Settings', 'Appearance'),
+      ('Today', 'No habits yet'),
+    ]) {
+      await tester.tap(find.text(tab));
+      await tester.pumpAndSettle();
+      expect(find.text(title), findsOneWidget, reason: 'tab $tab');
+    }
+  });
+
+  testWidgets('theme choice applies immediately and persists', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dark'));
+    await tester.pumpAndSettle();
+
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.themeMode, ThemeMode.dark);
+    final saved = await tester.runAsync(() => SettingsRepository(db).load());
+    expect(saved!.theme, ThemePreference.dark);
+  });
+}
