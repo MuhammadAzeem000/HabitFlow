@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
+import '../../../core/ads/ad_policy.dart';
+import '../../../core/ads/ad_slot.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
 import '../../../core/utilities/current_day.dart';
@@ -126,9 +128,10 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                 ),
               );
             },
-            footer: archived.isEmpty
-                ? null
-                : ExpansionTile(
+            footer: Column(
+              children: [
+                if (archived.isNotEmpty)
+                  ExpansionTile(
                     leading: const Icon(Icons.archive_outlined),
                     title: Text('Archived (${archived.length})'),
                     children: [
@@ -136,6 +139,9 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                         _HabitTile(habit: habit, archived: true),
                     ],
                   ),
+                const AdSlot(AdPlacement.habitsListFooter),
+              ],
+            ),
           );
         },
       ),

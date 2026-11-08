@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habitflow/app/app.dart';
 import 'package:habitflow/core/database/app_database.dart';
@@ -16,6 +17,7 @@ Future<void> pumpApp(
   DateTime Function()? clock,
   Duration Function()? monotonicClock,
   ReminderService? reminders,
+  List<Override> extraOverrides = const [],
 }) async {
   // A typical phone screen (360×780 dp) instead of the 800×600 default.
   tester.view
@@ -35,6 +37,7 @@ Future<void> pumpApp(
         ),
         if (reminders != null)
           reminderServiceProvider.overrideWithValue(reminders),
+        ...extraOverrides,
       ],
       child: const HabitFlowApp(),
     ),

@@ -5,6 +5,7 @@ import '../core/notifications/reminder_sync.dart';
 import '../core/utilities/time_format.dart';
 import '../features/challenges/application/challenge_providers.dart';
 import '../features/settings/application/settings_controller.dart';
+import '../shared/widgets/snackbar_route_observer.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
 
@@ -23,6 +24,7 @@ class HabitFlowApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'HabitFlow',
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: scaffoldMessengerKey,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: theme.themeMode,
