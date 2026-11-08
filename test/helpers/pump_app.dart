@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habitflow/app/app.dart';
 import 'package:habitflow/core/database/app_database.dart';
 import 'package:habitflow/core/database/database_providers.dart';
+import 'package:habitflow/core/notifications/reminder_service.dart';
 import 'package:habitflow/core/utilities/current_day.dart';
 import 'package:habitflow/features/settings/application/settings_controller.dart';
 import 'package:habitflow/features/settings/data/settings_repository.dart';
@@ -14,6 +15,7 @@ Future<void> pumpApp(
   AppDatabase db, {
   DateTime Function()? clock,
   Duration Function()? monotonicClock,
+  ReminderService? reminders,
 }) async {
   // A typical phone screen (360×780 dp) instead of the 800×600 default.
   tester.view
@@ -31,6 +33,8 @@ Future<void> pumpApp(
         monotonicClockProvider.overrideWithValue(
           monotonicClock ?? spacedTapClock(),
         ),
+        if (reminders != null)
+          reminderServiceProvider.overrideWithValue(reminders),
       ],
       child: const HabitFlowApp(),
     ),

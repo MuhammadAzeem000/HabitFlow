@@ -63,6 +63,9 @@ void main() {
     expect(find.text('2 of 3 this week'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('complete-Swim')));
+    // The tick itself lands on the next frame (see instant_completion_test);
+    // statistics derived from it follow within one more frame.
+    await tester.pump();
     await tester.pump();
     expect(find.textContaining('Goal met this week'), findsOneWidget);
   });

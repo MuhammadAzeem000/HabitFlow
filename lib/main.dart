@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
 import 'core/database/app_database.dart';
 import 'core/database/database_providers.dart';
+import 'core/notifications/reminder_service.dart';
 import 'features/settings/application/settings_controller.dart';
 import 'features/settings/data/settings_repository.dart';
 
@@ -16,14 +17,23 @@ Future<void> main() async {
 
   final db = AppDatabase();
   final settings = await SettingsRepository(db).load();
+  final reminders = LocalReminderService();
 
   runApp(
     ProviderScope(
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
         initialSettingsProvider.overrideWithValue(settings),
+        reminderServiceProvider.overrideWithValue(reminders),
       ],
       child: const HabitFlowApp(),
     ),
   );
+
+  // Reminders are optional: prepare the plugin after the first frame.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    reminders.initialize().catchError((Object e) {
+      debugPrint('Reminders: initialisation failed: $e');
+    });
+  });
 }

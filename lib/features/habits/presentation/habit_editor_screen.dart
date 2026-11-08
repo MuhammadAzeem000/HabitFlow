@@ -4,8 +4,11 @@ import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
+import '../../../core/notifications/reminder_service.dart';
 import '../../../core/utilities/current_day.dart';
 import '../../../core/utilities/local_day.dart';
+import '../../../core/utilities/time_format.dart';
+import '../../settings/application/settings_controller.dart';
 import '../../tracking/presentation/habit_stats_summary.dart';
 import '../domain/habit_appearance.dart';
 import '../domain/habit_draft.dart';
@@ -38,6 +41,7 @@ class _HabitEditorScreenState extends ConsumerState<HabitEditorScreen> {
   HabitFrequency _frequency = HabitFrequency.daily;
   Set<int> _weekdays = {1, 2, 3, 4, 5};
   int _weeklyTarget = 3;
+  TimeOfDay? _reminder;
   late LocalDay _startDate;
 
   bool get _isEditing => widget.habitId != null;
@@ -69,6 +73,7 @@ class _HabitEditorScreenState extends ConsumerState<HabitEditorScreen> {
       final days = decodeWeekdays(habit.targetDays);
       if (days.isNotEmpty) _weekdays = days.toSet();
       _weeklyTarget = habit.weeklyTarget ?? 3;
+      _reminder = parseStoredTime(habit.reminderTime);
       _startDate = LocalDay.parse(habit.startDate);
     });
   }
@@ -89,7 +94,7 @@ class _HabitEditorScreenState extends ConsumerState<HabitEditorScreen> {
     targetDays: _weekdays.toList(),
     weeklyTarget: _weeklyTarget,
     startDate: _startDate,
-    reminderTime: _existing?.reminderTime,
+    reminderTime: _reminder == null ? null : toStoredTime(_reminder!),
   );
 
   Future<void> _save() async {
@@ -116,6 +121,36 @@ class _HabitEditorScreenState extends ConsumerState<HabitEditorScreen> {
       await repo.createHabit(draft);
     }
     if (mounted) Navigator.of(context).pop();
+  }
+
+  /// Picks a reminder time. Notification permission is requested here, in
+  /// context, rather than at launch.
+  Future<void> _pickReminder() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _reminder ?? const TimeOfDay(hour: 9, minute: 0),
+      helpText: 'Remind me at',
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _reminder = picked);
+
+    final messenger = ScaffoldMessenger.of(context);
+    final settings = ref.read(settingsControllerProvider);
+    final granted = await ref.read(reminderServiceProvider).requestPermission();
+    if (!granted) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Notifications are blocked. You can allow them in your '
+            'phone’s settings for HabitFlow.',
+          ),
+        ),
+      );
+    } else if (!settings.notificationsEnabled) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Reminders are turned off in Settings.')),
+      );
+    }
   }
 
   Future<void> _pickStartDate() async {
@@ -306,6 +341,27 @@ class _HabitEditorScreenState extends ConsumerState<HabitEditorScreen> {
             title: const Text('Start date'),
             subtitle: Text(DateFormat.yMMMEd().format(_startDate.startOfDay)),
             onTap: _pickStartDate,
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
+              _reminder == null
+                  ? Icons.notifications_none
+                  : Icons.notifications_active_outlined,
+            ),
+            title: const Text('Reminder'),
+            subtitle: Text(
+              _reminder == null ? 'Off' : formatTime(context, _reminder!),
+              key: const Key('reminder-value'),
+            ),
+            onTap: _pickReminder,
+            trailing: _reminder == null
+                ? null
+                : IconButton(
+                    tooltip: 'Remove reminder',
+                    icon: const Icon(Icons.close),
+                    onPressed: () => setState(() => _reminder = null),
+                  ),
           ),
           if (_isEditing) ...[
             const Divider(height: 32),
