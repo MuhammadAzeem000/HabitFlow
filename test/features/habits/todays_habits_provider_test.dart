@@ -60,7 +60,11 @@ void main() {
     final archived = await create('Archived');
     await create('Active');
     final repo = container.read(habitRepositoryProvider);
-    await repo.setPausedUntil(paused, const LocalDay(2026, 11, 9));
+    await repo.pause(
+      paused,
+      from: const LocalDay(2026, 11, 9),
+      until: const LocalDay(2026, 11, 9),
+    );
     await repo.setArchived(archived, archived: true);
 
     expect(await todaysNames(), ['Active']);

@@ -66,6 +66,9 @@ class HabitScheduler {
   HabitScheduler(this.habit, Iterable<HabitScheduleEntry> history)
     : _history = history.sortedBy((e) => e.effectiveFrom),
       _startDate = LocalDay.parse(habit.startDate),
+      _pausedFrom = habit.pausedFrom == null
+          ? null
+          : LocalDay.parse(habit.pausedFrom!),
       _pausedUntil = habit.pausedUntil == null
           ? null
           : LocalDay.parse(habit.pausedUntil!);
@@ -73,6 +76,7 @@ class HabitScheduler {
   final Habit habit;
   final List<HabitScheduleEntry> _history;
   final LocalDay _startDate;
+  final LocalDay? _pausedFrom;
   final LocalDay? _pausedUntil;
 
   /// The schedule rule in force on [day].
@@ -87,18 +91,26 @@ class HabitScheduler {
 
   bool hasStartedBy(LocalDay day) => !day.isBefore(_startDate);
 
+  /// Paused from `paused_from` (or the start, for v1 data) through
+  /// `paused_until`, inclusive.
   bool isPausedOn(LocalDay day) {
     final until = _pausedUntil;
-    return until != null && !day.isAfter(until);
+    if (until == null || day.isAfter(until)) return false;
+    final from = _pausedFrom;
+    return from == null || !day.isBefore(from);
   }
 
-  /// Whether the habit is due on [day]: started, not archived, not paused,
-  /// and the schedule in force on that day includes it.
-  bool isScheduledOn(LocalDay day) =>
-      !habit.isArchived &&
-      hasStartedBy(day) &&
-      !isPausedOn(day) &&
-      scheduleOn(day).isDueOn(day);
+  /// Whether the habit was due on [day] by its own rules (started, not
+  /// paused, and the schedule in force that day includes it), regardless of
+  /// whether it is archived now. Used for history and statistics.
+  bool isDueOn(LocalDay day) =>
+      hasStartedBy(day) && !isPausedOn(day) && scheduleOn(day).isDueOn(day);
+
+  /// Whether the habit should appear on the list for [day]: due and not
+  /// archived.
+  bool isScheduledOn(LocalDay day) => !habit.isArchived && isDueOn(day);
+
+  LocalDay get startDate => _startDate;
 }
 
 /// Short human-readable schedule summary, e.g. "Every day", "Mon, Wed, Fri",
