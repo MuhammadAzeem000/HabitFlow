@@ -8,6 +8,13 @@ import 'local_day.dart';
 /// Source of "now". Overridden in tests.
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
+/// Monotonic elapsed time for measuring short intervals (unaffected by
+/// wall-clock or timezone changes). Overridden in tests.
+final monotonicClockProvider = Provider<Duration Function()>((ref) {
+  final stopwatch = Stopwatch()..start();
+  return () => stopwatch.elapsed;
+});
+
 /// Today's date in device-local time. Rolls over at local midnight and is
 /// re-checked whenever the app returns to the foreground (covers timezone
 /// changes and devices that slept through midnight).

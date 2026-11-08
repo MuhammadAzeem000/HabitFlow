@@ -105,6 +105,9 @@ class HomeScreen extends ConsumerWidget {
     final previous = entry.status;
     final nowDone = !entry.isDone;
 
+    final write = controller.toggle(habit.id, current: previous);
+    if (write == null) return; // accidental double tap — ignored
+
     unawaited(HapticFeedback.selectionClick());
     messenger
       ..hideCurrentSnackBar()
@@ -122,7 +125,7 @@ class HomeScreen extends ConsumerWidget {
       );
 
     try {
-      await controller.toggle(habit.id, current: previous);
+      await write;
     } on Object {
       messenger
         ..hideCurrentSnackBar()

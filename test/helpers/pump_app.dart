@@ -13,6 +13,7 @@ Future<void> pumpApp(
   WidgetTester tester,
   AppDatabase db, {
   DateTime Function()? clock,
+  Duration Function()? monotonicClock,
 }) async {
   // A typical phone screen (360×780 dp) instead of the 800×600 default.
   tester.view
@@ -27,11 +28,21 @@ Future<void> pumpApp(
         appDatabaseProvider.overrideWithValue(db),
         initialSettingsProvider.overrideWithValue(settings!),
         if (clock != null) clockProvider.overrideWithValue(clock),
+        monotonicClockProvider.overrideWithValue(
+          monotonicClock ?? spacedTapClock(),
+        ),
       ],
       child: const HabitFlowApp(),
     ),
   );
   await settle(tester);
+}
+
+/// A monotonic clock that advances one second per read, so taps in tests
+/// are never mistaken for accidental double taps unless a test opts in.
+Duration Function() spacedTapClock() {
+  var ticks = 0;
+  return () => Duration(seconds: ++ticks);
 }
 
 /// Scrolls [finder] into view, then taps it.

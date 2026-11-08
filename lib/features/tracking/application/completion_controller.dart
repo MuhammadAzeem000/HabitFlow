@@ -30,8 +30,13 @@ final completionControllerProvider =
 /// write fails, it is dropped immediately and the UI falls back to the
 /// stored value.
 class CompletionController extends Notifier<Map<String, PendingCompletion>> {
+  /// A second tap on the same habit within this window is treated as an
+  /// accidental double tap and ignored (HF-007).
+  static const duplicateTapWindow = Duration(milliseconds: 400);
+
   final _queues = <String, Future<void>>{};
   final _inFlight = <String, int>{};
+  final _lastTap = <String, Duration>{};
 
   @override
   Map<String, PendingCompletion> build() {
@@ -44,11 +49,20 @@ class CompletionController extends Notifier<Map<String, PendingCompletion>> {
   }
 
   /// Marks [habitId] done, or not done if [current] is done.
-  Future<void> toggle(String habitId, {required CompletionStatus? current}) =>
-      setStatus(
-        habitId,
-        current == CompletionStatus.done ? null : CompletionStatus.done,
-      );
+  ///
+  /// Returns null (and does nothing) when the tap repeats the previous one
+  /// within [duplicateTapWindow]; otherwise returns the pending write.
+  Future<void>? toggle(String habitId, {required CompletionStatus? current}) {
+    final now = ref.read(monotonicClockProvider)();
+    final last = _lastTap[habitId];
+    if (last != null && now - last < duplicateTapWindow) return null;
+    _lastTap[habitId] = now;
+
+    return setStatus(
+      habitId,
+      current == CompletionStatus.done ? null : CompletionStatus.done,
+    );
+  }
 
   /// Sets today's state for [habitId] (null clears it). Completes when the
   /// write is stored; throws if the write fails.
