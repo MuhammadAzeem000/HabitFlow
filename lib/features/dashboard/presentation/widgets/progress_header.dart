@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../tracking/domain/consistency.dart';
 import '../../application/today_providers.dart';
 
 /// Date, "X of Y done" and a progress ring, with an encouraging line.
 class ProgressHeader extends StatelessWidget {
-  const ProgressHeader({required this.date, required this.progress, super.key});
+  const ProgressHeader({
+    required this.date,
+    required this.progress,
+    this.weekly,
+    super.key,
+  });
 
   final DateTime date;
   final DayProgress progress;
+
+  /// Combined consistency for this week across all habits.
+  final Consistency? weekly;
 
   String get _message {
     if (progress.total == 0) return 'Enjoy your rest day.';
@@ -52,6 +61,27 @@ class ProgressHeader extends StatelessWidget {
                       color: scheme.onPrimaryContainer,
                     ),
                   ),
+                  if (weekly?.percentLabel case final percent?) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.insights,
+                          size: 16,
+                          color: scheme.onPrimaryContainer,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'This week: $percent consistent',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: scheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -12,13 +12,16 @@ import '../../tracking/domain/streak.dart';
 /// A habit scheduled today, with its state for today (null = not done yet).
 @immutable
 class TodayEntry {
-  const TodayEntry({required this.habit, this.status, this.streak});
+  const TodayEntry({required this.habit, this.status, this.streak, this.week});
 
   final Habit habit;
   final CompletionStatus? status;
 
   /// Null while statistics are still loading.
   final Streak? streak;
+
+  /// This week's figures; null while statistics are still loading.
+  final HabitWeekStats? week;
 
   bool get isDone => status == CompletionStatus.done;
   bool get isRestDay => status == CompletionStatus.skipped;
@@ -64,6 +67,7 @@ final todayEntriesProvider = Provider<AsyncValue<List<TodayEntry>>>((ref) {
   final pending = ref.watch(completionControllerProvider);
   // Statistics are a bonus: never hold the list back waiting for them.
   final streaks = ref.watch(streaksProvider).value ?? const {};
+  final weekStats = ref.watch(weeklyStatsProvider).value ?? const {};
   return combineAsync(
     ref.watch(todaysHabitsProvider),
     ref.watch(todayCompletionsProvider),
@@ -77,6 +81,7 @@ final todayEntriesProvider = Provider<AsyncValue<List<TodayEntry>>>((ref) {
                 ? pending[h.id]!.status
                 : byHabit[h.id],
             streak: streaks[h.id],
+            week: weekStats[h.id],
           ),
       ];
     },
