@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show Color;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -58,6 +59,8 @@ class LocalReminderService implements ReminderService {
     channelDescription: 'Optional reminders for the habits you choose.',
     importance: Importance.defaultImportance,
     priority: Priority.defaultPriority,
+    icon: '@drawable/ic_stat_habitflow',
+    color: Color(0xFF2E7D6B),
   );
 
   @override
@@ -74,7 +77,7 @@ class LocalReminderService implements ReminderService {
     }
     await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('@drawable/ic_stat_habitflow'),
       ),
     );
   }
