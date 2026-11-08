@@ -60,4 +60,33 @@ class ChallengeRepository {
       ),
     );
   }
+
+  /// Starts the challenge again from [today]; earlier completions no longer
+  /// count toward it.
+  Future<void> restart(String id, {required LocalDay today}) async {
+    await (_db.update(_db.challenges)..where((c) => c.id.equals(id))).write(
+      ChallengesCompanion(
+        startDate: Value(today.key),
+        status: const Value(ChallengeStatus.active),
+        pausedOn: const Value(null),
+        completedAt: const Value(null),
+        updatedAt: Value(_clock()),
+      ),
+    );
+  }
+
+  /// Marks a challenge complete, once (idempotent).
+  Future<void> markCompleted(String id) async {
+    final now = _clock();
+    await (_db.update(_db.challenges)..where(
+          (c) => c.id.equals(id) & c.status.equals(ChallengeStatus.active.name),
+        ))
+        .write(
+          ChallengesCompanion(
+            status: const Value(ChallengeStatus.completed),
+            completedAt: Value(now),
+            updatedAt: Value(now),
+          ),
+        );
+  }
 }
