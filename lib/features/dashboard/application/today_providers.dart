@@ -5,6 +5,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
 import '../../../core/utilities/current_day.dart';
 import '../../habits/application/habit_providers.dart';
+import '../../tracking/application/completion_controller.dart';
 
 /// A habit scheduled today, with its state for today (null = not done yet).
 @immutable
@@ -53,14 +54,22 @@ final todayCompletionsProvider = StreamProvider<List<HabitCompletion>>((ref) {
 });
 
 /// Today's scheduled habits with their completion state, in user order.
+/// Optimistic (not yet stored) taps take precedence over stored state.
 final todayEntriesProvider = Provider<AsyncValue<List<TodayEntry>>>((ref) {
+  final pending = ref.watch(completionControllerProvider);
   return combineAsync(
     ref.watch(todaysHabitsProvider),
     ref.watch(todayCompletionsProvider),
     (habits, completions) {
       final byHabit = {for (final c in completions) c.habitId: c.status};
       return [
-        for (final h in habits) TodayEntry(habit: h, status: byHabit[h.id]),
+        for (final h in habits)
+          TodayEntry(
+            habit: h,
+            status: pending.containsKey(h.id)
+                ? pending[h.id]!.status
+                : byHabit[h.id],
+          ),
       ];
     },
   );
