@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/calendar/presentation/calendar_screen.dart';
+import '../features/challenges/presentation/challenges_screen.dart';
 import '../features/dashboard/presentation/home_screen.dart';
 import '../features/habits/presentation/habit_editor_screen.dart';
 import '../features/habits/presentation/habits_screen.dart';
@@ -56,6 +57,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.newHabit,
         builder: (context, state) => const HabitEditorScreen(),
+      ),
+      GoRoute(
+        path: Routes.challenges,
+        builder: (context, state) => const ChallengesScreen(),
       ),
       GoRoute(
         path: Routes.editHabitPattern,

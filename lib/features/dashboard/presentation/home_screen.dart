@@ -9,6 +9,7 @@ import '../../../app/routes.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utilities/current_day.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../challenges/presentation/challenge_strip.dart';
 import '../../habits/application/habit_providers.dart';
 import '../../habits/presentation/habit_actions.dart';
 import '../../tracking/application/completion_controller.dart';
@@ -68,7 +69,9 @@ class HomeScreen extends ConsumerWidget {
                 progress: DayProgress.of(list),
                 weekly: ref.watch(overallWeeklyConsistencyProvider),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              const ChallengeStrip(),
+              const SizedBox(height: 4),
               if (list.isEmpty)
                 const Padding(
                   padding: EdgeInsets.only(top: 32),
