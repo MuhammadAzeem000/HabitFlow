@@ -10,6 +10,7 @@ import '../../../core/utilities/current_day.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../habits/application/habit_providers.dart';
 import '../../tracking/application/completion_controller.dart';
+import '../../tracking/application/stats_providers.dart';
 import '../application/today_providers.dart';
 import 'widgets/progress_header.dart';
 import 'widgets/today_habit_card.dart';
@@ -63,6 +64,7 @@ class HomeScreen extends ConsumerWidget {
               ProgressHeader(
                 date: today.startOfDay,
                 progress: DayProgress.of(list),
+                weekly: ref.watch(overallWeeklyConsistencyProvider),
               ),
               const SizedBox(height: 16),
               if (list.isEmpty)

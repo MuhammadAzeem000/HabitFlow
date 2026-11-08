@@ -26,7 +26,12 @@ class TodayHabitCard extends StatelessWidget {
     final theme = Theme.of(context);
     final habit = entry.habit;
     final color = habitColorFor(habit.color);
-    final schedule = describeSchedule(HabitSchedule.fromHabit(habit));
+    final goal = entry.week?.goalProgress;
+    final schedule = goal == null
+        ? describeSchedule(HabitSchedule.fromHabit(habit))
+        : goal.done >= goal.goal
+        ? 'Goal met this week'
+        : '${goal.done} of ${goal.goal} this week';
     final streak = entry.streak;
     final showStreak =
         streak != null &&
