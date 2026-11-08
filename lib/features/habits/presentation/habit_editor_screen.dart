@@ -309,6 +309,32 @@ class _HabitEditorScreenState extends ConsumerState<HabitEditorScreen> {
           ),
           if (_isEditing) ...[
             const Divider(height: 32),
+            if (activePauseEnd(_existing!, ref.watch(currentDayProvider))
+                case final until?)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.play_circle_outline),
+                title: const Text('Resume habit'),
+                subtitle: Text(pausedUntilLabel(until)),
+                onTap: () async {
+                  final navigator = Navigator.of(context);
+                  await resumeHabit(context, ref, _existing!);
+                  navigator.pop();
+                },
+              )
+            else
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.pause_circle_outline),
+                title: const Text('Pause habit'),
+                subtitle: const Text('Take a break without losing progress'),
+                onTap: () async {
+                  final navigator = Navigator.of(context);
+                  if (await choosePauseAndApply(context, ref, _existing!)) {
+                    navigator.pop();
+                  }
+                },
+              ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.archive_outlined),

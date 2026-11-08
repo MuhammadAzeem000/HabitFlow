@@ -122,6 +122,17 @@ void main() {
     });
   });
 
+  test('pausing later never erases earlier misses', () {
+    // Missed Wed; paused Sat–Sun; done Mon–Fri before the miss.
+    final habit = habitFixture(
+      startDate: start.key,
+      pausedFrom: day(5).key,
+      pausedUntil: day(6).key,
+    );
+    final s = streak(habit, done([0, 1, 3, 4]), today: 6);
+    expect(s, const Streak(current: 2, longest: 2));
+  });
+
   group('schedule edits', () {
     test('past days are judged by the schedule in force at the time', () {
       // Daily until Thu 5 Nov, then Mon/Wed/Fri.

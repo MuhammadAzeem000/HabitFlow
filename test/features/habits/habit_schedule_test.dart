@@ -56,6 +56,17 @@ void main() {
       expect(s.isScheduledOn(mon.addDays(2)), isTrue);
     });
 
+    test('a pause with a start date leaves earlier days untouched', () {
+      final s = HabitScheduler(
+        habitFixture(pausedFrom: '2026-11-10', pausedUntil: '2026-11-11'),
+        [],
+      );
+      expect(s.isScheduledOn(mon), isTrue); // before the pause
+      expect(s.isScheduledOn(mon.addDays(1)), isFalse);
+      expect(s.isScheduledOn(mon.addDays(2)), isFalse);
+      expect(s.isScheduledOn(mon.addDays(3)), isTrue); // after
+    });
+
     test('archived habits are never scheduled', () {
       final s = HabitScheduler(habitFixture(isArchived: true), []);
       expect(week.any(s.isScheduledOn), isFalse);

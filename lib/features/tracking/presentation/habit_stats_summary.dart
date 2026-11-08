@@ -22,33 +22,48 @@ class HabitStatsSummary extends ConsumerWidget {
         : week?.consistency.percentLabel ?? '—';
     final unit = streak.unit == StreakUnit.days ? 'days' : 'weeks';
 
+    final freshStart = streak.current == 0 && streak.longest > 0;
+
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: _StatTile(
-              icon: Icons.local_fire_department_outlined,
-              label: 'Current streak',
-              value: '${streak.current} $unit',
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.local_fire_department_outlined,
+                  label: 'Current streak',
+                  value: '${streak.current} $unit',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.emoji_events_outlined,
+                  label: 'Best streak',
+                  value: '${streak.longest} $unit',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.insights,
+                  label: 'This week',
+                  value: thisWeek,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _StatTile(
-              icon: Icons.emoji_events_outlined,
-              label: 'Best streak',
-              value: '${streak.longest} $unit',
+          if (freshStart)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'Every day is a fresh start. Your best is ${streak.longest} $unit.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _StatTile(
-              icon: Icons.insights,
-              label: 'This week',
-              value: thisWeek,
-            ),
-          ),
         ],
       ),
     );

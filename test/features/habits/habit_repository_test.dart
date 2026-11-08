@@ -153,11 +153,55 @@ void main() {
     expect(await habits.getScheduleHistory(id), isEmpty);
   });
 
-  test('pause and resume', () async {
+  test('pause stores a start and end date', () async {
     final id = await habits.createHabit(draft('Read'));
-    await habits.setPausedUntil(id, const LocalDay(2026, 11, 20));
-    expect((await habits.getHabit(id))!.pausedUntil, '2026-11-20');
-    await habits.setPausedUntil(id, null);
+    await habits.pause(
+      id,
+      from: const LocalDay(2026, 11, 8),
+      until: const LocalDay(2026, 11, 20),
+    );
+    final h = (await habits.getHabit(id))!;
+    expect(h.pausedFrom, '2026-11-08');
+    expect(h.pausedUntil, '2026-11-20');
+  });
+
+  test(
+    'resume keeps days already paused, ending the pause yesterday',
+    () async {
+      final id = await habits.createHabit(draft('Read'));
+      await habits.pause(
+        id,
+        from: const LocalDay(2026, 11, 5),
+        until: const LocalDay(2026, 11, 20),
+      );
+      await habits.resume(id, today: const LocalDay(2026, 11, 8));
+      final h = (await habits.getHabit(id))!;
+      expect(h.pausedFrom, '2026-11-05');
+      expect(h.pausedUntil, '2026-11-07');
+    },
+  );
+
+  test('resuming on the day a pause starts removes it', () async {
+    final id = await habits.createHabit(draft('Read'));
+    await habits.pause(
+      id,
+      from: const LocalDay(2026, 11, 8),
+      until: const LocalDay(2026, 11, 20),
+    );
+    await habits.resume(id, today: const LocalDay(2026, 11, 8));
+    final h = (await habits.getHabit(id))!;
+    expect(h.pausedFrom, isNull);
+    expect(h.pausedUntil, isNull);
+  });
+
+  test('restorePause puts back an exact state (undo)', () async {
+    final id = await habits.createHabit(draft('Read'));
+    await habits.pause(
+      id,
+      from: const LocalDay(2026, 11, 8),
+      until: const LocalDay(2026, 11, 20),
+    );
+    await habits.restorePause(id);
     expect((await habits.getHabit(id))!.pausedUntil, isNull);
   });
 

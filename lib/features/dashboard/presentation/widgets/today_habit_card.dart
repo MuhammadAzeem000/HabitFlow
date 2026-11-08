@@ -12,6 +12,7 @@ class TodayHabitCard extends StatelessWidget {
     required this.entry,
     this.onToggle,
     this.onOpen,
+    this.onMore,
     super.key,
   });
 
@@ -20,6 +21,9 @@ class TodayHabitCard extends StatelessWidget {
   /// Toggles completion. Null renders the button read-only.
   final VoidCallback? onToggle;
   final VoidCallback? onOpen;
+
+  /// Long-press actions (rest day, pause, edit).
+  final VoidCallback? onMore;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +51,7 @@ class TodayHabitCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onOpen,
+        onLongPress: onMore,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
           child: Row(
