@@ -6,9 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
+import '../../../core/database/app_database.dart';
 import '../../../core/utilities/current_day.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../habits/application/habit_providers.dart';
+import '../../habits/presentation/habit_actions.dart';
 import '../../tracking/application/completion_controller.dart';
 import '../../tracking/application/stats_providers.dart';
 import '../application/today_providers.dart';
@@ -83,6 +85,7 @@ class HomeScreen extends ConsumerWidget {
                     child: TodayHabitCard(
                       entry: entry,
                       onToggle: () => _toggle(context, ref, entry),
+                      onMore: () => _showDayActions(context, ref, entry),
                       onOpen: () =>
                           context.push(Routes.editHabit(entry.habit.id)),
                     ),
@@ -92,6 +95,72 @@ class HomeScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  /// Rest day, pause and edit actions for a habit on Today (HF-012).
+  Future<void> _showDayActions(
+    BuildContext context,
+    WidgetRef ref,
+    TodayEntry entry,
+  ) async {
+    final habit = entry.habit;
+    final action = await showModalBottomSheet<_DayAction>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (entry.isRestDay)
+              const ListTile(
+                leading: Icon(Icons.undo),
+                title: Text('Undo rest day'),
+              ).withAction(context, _DayAction.undoRest)
+            else
+              const ListTile(
+                leading: Icon(Icons.self_improvement),
+                title: Text('Take a rest day'),
+                subtitle: Text('Won’t count against your streak'),
+              ).withAction(context, _DayAction.rest),
+            const ListTile(
+              leading: Icon(Icons.pause_circle_outline),
+              title: Text('Pause habit…'),
+              subtitle: Text('Take a longer break'),
+            ).withAction(context, _DayAction.pause),
+            const ListTile(
+              leading: Icon(Icons.edit_outlined),
+              title: Text('Edit habit'),
+            ).withAction(context, _DayAction.edit),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !context.mounted) return;
+
+    final controller = ref.read(completionControllerProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
+    switch (action) {
+      case _DayAction.rest:
+        final previous = entry.status;
+        unawaited(controller.setStatus(habit.id, CompletionStatus.skipped));
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('Rest day for ${habit.name}. Enjoy it.'),
+              action: SnackBarAction(
+                label: 'Undo',
+                onPressed: () => controller.setStatus(habit.id, previous),
+              ),
+            ),
+          );
+      case _DayAction.undoRest:
+        unawaited(controller.setStatus(habit.id, null));
+      case _DayAction.pause:
+        await choosePauseAndApply(context, ref, habit);
+      case _DayAction.edit:
+        await context.push(Routes.editHabit(habit.id));
+    }
   }
 
   /// Instant, optimistic toggle with an Undo snackbar. Never waits on
@@ -138,4 +207,16 @@ class HomeScreen extends ConsumerWidget {
         );
     }
   }
+}
+
+enum _DayAction { rest, undoRest, pause, edit }
+
+extension on ListTile {
+  /// The same tile, closing the sheet with [action] when tapped.
+  Widget withAction(BuildContext context, _DayAction action) => ListTile(
+    leading: leading,
+    title: title,
+    subtitle: subtitle,
+    onTap: () => Navigator.pop(context, action),
+  );
 }

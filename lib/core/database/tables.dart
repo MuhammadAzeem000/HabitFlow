@@ -30,7 +30,12 @@ class Habits extends Table {
   IntColumn get orderIndex => integer().withDefault(const Constant(0))();
   BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
 
-  /// Paused through this day (inclusive); paused days are never misses.
+  /// Paused from this day through [pausedUntil] (inclusive); paused days
+  /// are never misses. Null with a [pausedUntil] means paused from the start
+  /// (schema v1 behaviour).
+  TextColumn get pausedFrom => text().nullable()();
+
+  /// Last paused day (inclusive).
   TextColumn get pausedUntil => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();

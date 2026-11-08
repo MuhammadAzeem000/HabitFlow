@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/routes.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
+import '../../../core/utilities/current_day.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../application/habit_providers.dart';
 import '../domain/habit_schedule.dart';
@@ -142,7 +143,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
   }
 }
 
-enum _HabitAction { edit, archive, restore, delete }
+enum _HabitAction { edit, pause, resume, archive, restore, delete }
 
 class _HabitTile extends ConsumerWidget {
   const _HabitTile({
@@ -157,6 +158,9 @@ class _HabitTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final pausedUntil = archived
+        ? null
+        : activePauseEnd(habit, ref.watch(currentDayProvider));
     return Material(
       type: MaterialType.transparency,
       child: ListTile(
@@ -166,7 +170,11 @@ class _HabitTile extends ConsumerWidget {
           child: HabitAvatar(icon: habit.icon, color: habit.color),
         ),
         title: Text(habit.name),
-        subtitle: Text(describeSchedule(HabitSchedule.fromHabit(habit))),
+        subtitle: Text(
+          pausedUntil != null
+              ? pausedUntilLabel(pausedUntil)
+              : describeSchedule(HabitSchedule.fromHabit(habit)),
+        ),
         onTap: archived ? null : () => context.push(Routes.editHabit(habit.id)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -177,6 +185,10 @@ class _HabitTile extends ConsumerWidget {
                 switch (action) {
                   case _HabitAction.edit:
                     await context.push(Routes.editHabit(habit.id));
+                  case _HabitAction.pause:
+                    await choosePauseAndApply(context, ref, habit);
+                  case _HabitAction.resume:
+                    await resumeHabit(context, ref, habit);
                   case _HabitAction.archive:
                     await archiveHabit(context, ref, habit);
                   case _HabitAction.restore:
@@ -188,9 +200,22 @@ class _HabitTile extends ConsumerWidget {
                 }
               },
               itemBuilder: (context) => [
-                if (!archived) ...const [
-                  PopupMenuItem(value: _HabitAction.edit, child: Text('Edit')),
-                  PopupMenuItem(
+                if (!archived) ...[
+                  const PopupMenuItem(
+                    value: _HabitAction.edit,
+                    child: Text('Edit'),
+                  ),
+                  if (pausedUntil == null)
+                    const PopupMenuItem(
+                      value: _HabitAction.pause,
+                      child: Text('Pause'),
+                    )
+                  else
+                    const PopupMenuItem(
+                      value: _HabitAction.resume,
+                      child: Text('Resume'),
+                    ),
+                  const PopupMenuItem(
                     value: _HabitAction.archive,
                     child: Text('Archive'),
                   ),

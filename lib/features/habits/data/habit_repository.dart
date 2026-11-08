@@ -123,11 +123,42 @@ class HabitRepository {
     );
   }
 
-  /// Pauses through [until] (inclusive); pass null to resume.
-  Future<void> setPausedUntil(String id, LocalDay? until) async {
+  /// Pauses from [from] through [until] (inclusive). Paused days are never
+  /// misses, and days before [from] keep their history.
+  Future<void> pause(
+    String id, {
+    required LocalDay from,
+    required LocalDay until,
+  }) => _writePause(id, from: from, until: until);
+
+  /// Ends a pause so the habit is due again from [today]. Days already
+  /// paused stay paused; a pause that hadn't started yet is removed.
+  Future<void> resume(String id, {required LocalDay today}) async {
+    final habit = await getHabit(id);
+    if (habit == null || habit.pausedUntil == null) return;
+    final from = habit.pausedFrom == null
+        ? null
+        : LocalDay.parse(habit.pausedFrom!);
+    final yesterday = today.addDays(-1);
+    if (from != null && from.isAfter(yesterday)) {
+      await _writePause(id, from: null, until: null);
+    } else {
+      await _writePause(id, from: from, until: yesterday);
+    }
+  }
+
+  /// Restores an exact pause state (used by undo).
+  Future<void> restorePause(String id, {String? from, String? until}) =>
+      _writePauseKeys(id, from: from, until: until);
+
+  Future<void> _writePause(String id, {LocalDay? from, LocalDay? until}) =>
+      _writePauseKeys(id, from: from?.key, until: until?.key);
+
+  Future<void> _writePauseKeys(String id, {String? from, String? until}) async {
     await (_db.update(_habits)..where((h) => h.id.equals(id))).write(
       HabitsCompanion(
-        pausedUntil: Value(until?.key),
+        pausedFrom: Value(from),
+        pausedUntil: Value(until),
         updatedAt: Value(_clock()),
       ),
     );
