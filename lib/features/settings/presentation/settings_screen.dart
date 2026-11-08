@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../app/routes.dart';
 import '../../../core/database/enums.dart';
 import '../../../core/notifications/reminder_service.dart';
 import '../../../core/utilities/time_format.dart';
@@ -97,6 +99,15 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const Divider(height: 32),
+          ListTile(
+            leading: const Icon(Icons.workspace_premium_outlined),
+            title: const Text('Free & Plus'),
+            subtitle: const Text(
+              'What’s free forever, and what may come later',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(Routes.plans),
+          ),
           const ListTile(
             leading: Icon(Icons.offline_bolt_outlined),
             title: Text('Your data stays on this device'),

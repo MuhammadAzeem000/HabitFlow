@@ -6,6 +6,7 @@ import '../features/challenges/presentation/challenges_screen.dart';
 import '../features/dashboard/presentation/home_screen.dart';
 import '../features/habits/presentation/habit_editor_screen.dart';
 import '../features/habits/presentation/habits_screen.dart';
+import '../features/settings/presentation/plans_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../shared/widgets/app_shell.dart';
 import 'routes.dart';
@@ -57,6 +58,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.newHabit,
         builder: (context, state) => const HabitEditorScreen(),
+      ),
+      GoRoute(
+        path: Routes.plans,
+        builder: (context, state) => const PlansScreen(),
       ),
       GoRoute(
         path: Routes.challenges,
