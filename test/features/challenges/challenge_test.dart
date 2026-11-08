@@ -216,7 +216,7 @@ void main() {
       await tester.tap(find.byTooltip('Challenge options'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Pause'));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await tester.tap(find.text('1 week'));
       await settle(tester);
 
