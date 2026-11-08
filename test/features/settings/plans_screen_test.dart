@@ -18,6 +18,9 @@ void main() {
     await tester.pumpAndSettle();
     await tapVisible(tester, find.text('Free & Plus'));
     await tester.pumpAndSettle();
+    // A very tall screen so every row of this long, lazily built list exists.
+    tester.view.physicalSize = const Size(1080, 9000);
+    await tester.pumpAndSettle();
   }
 
   testWidgets('lists free-forever features and the core promise', (
@@ -54,6 +57,15 @@ void main() {
       find.textContaining('price and any trial terms will be shown'),
       findsOneWidget,
     );
+    await tester.scrollUntilVisible(
+      find.textContaining('never interrupt completing a habit'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+      find.textContaining('never interrupt completing a habit'),
+      findsOneWidget,
+    );
     // No purchase flow exists.
     for (final word in ['Buy', 'Subscribe', 'Upgrade', 'Start trial']) {
       expect(find.text(word), findsNothing, reason: word);
@@ -64,5 +76,23 @@ void main() {
     final titles = freeForeverFeatures.map((f) => f.title);
     expect(titles, contains('30-day challenge'));
     expect(titles, contains('Your full history'));
+  });
+
+  test('Plus is ad-free plus added value, never a habit limit', () {
+    expect(plannedPlusFeatures.map((f) => f.title), [
+      'Ad-free',
+      'Advanced analytics',
+      'Premium themes',
+      'Advanced routines',
+    ]);
+    // Habit counts are not part of the comparison at all.
+    final all = [
+      ...freeForeverFeatures,
+      ...plannedPlusFeatures,
+    ].map((f) => '${f.title} ${f.detail}'.toLowerCase());
+    for (final text in all) {
+      expect(text, isNot(contains('unlimited')), reason: text);
+      expect(text, isNot(contains('habit limit')), reason: text);
+    }
   });
 }

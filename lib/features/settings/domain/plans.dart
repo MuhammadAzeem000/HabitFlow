@@ -42,21 +42,25 @@ const freeForeverFeatures = <PlanFeature>[
 
 /// Ideas for a possible future "Plus" tier. Nothing here exists yet and
 /// nothing is locked.
+///
+/// Product rule: the free tier is supported by non-intrusive ads; Plus adds
+/// value on top. Plus never restricts the core habit-tracking experience
+/// (no habit limits, no locked history).
 const plannedPlusFeatures = <PlanFeature>[
+  PlanFeature(Icons.block, 'Ad-free', 'No ads anywhere in the app'),
   PlanFeature(
     Icons.insights,
-    'Advanced statistics',
-    'Longer-term trends and insights',
-  ),
-  PlanFeature(Icons.palette_outlined, 'Themes', 'Extra colour themes'),
-  PlanFeature(
-    Icons.file_download_outlined,
-    'Data export',
-    'Export your history as a file',
+    'Advanced analytics',
+    'Long-term trends, patterns and deeper insights',
   ),
   PlanFeature(
-    Icons.block,
-    'Ad-free',
-    'Only relevant if ads are ever introduced',
+    Icons.palette_outlined,
+    'Premium themes',
+    'Extra colour themes and styles',
+  ),
+  PlanFeature(
+    Icons.route_outlined,
+    'Advanced routines',
+    'Group habits into routines with richer scheduling',
   ),
 ];

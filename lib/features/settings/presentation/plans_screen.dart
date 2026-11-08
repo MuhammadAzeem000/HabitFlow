@@ -52,6 +52,10 @@ class PlansScreen extends StatelessWidget {
             'A challenge or routine you start for free will never be '
             'interrupted by a paywall.',
           ),
+          const _Promise(
+            'If the free version shows ads, they will never interrupt '
+            'completing a habit or slow the app down.',
+          ),
         ],
       ),
     );
