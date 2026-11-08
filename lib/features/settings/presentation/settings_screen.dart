@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/enums.dart';
+import '../../../core/utilities/time_format.dart';
 import '../application/settings_controller.dart';
+
+const _sampleTime = TimeOfDay(hour: 21, minute: 30);
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -40,6 +43,41 @@ class SettingsScreen extends ConsumerWidget {
               ],
               selected: {settings.theme},
               onSelectionChanged: (s) => controller.setTheme(s.first),
+            ),
+          ),
+          const _SectionHeader('Time format'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: SegmentedButton<TimeFormatPreference>(
+              segments: const [
+                ButtonSegment(
+                  value: TimeFormatPreference.system,
+                  label: Text('System'),
+                ),
+                ButtonSegment(
+                  value: TimeFormatPreference.h12,
+                  label: Text('12-hour'),
+                ),
+                ButtonSegment(
+                  value: TimeFormatPreference.h24,
+                  label: Text('24-hour'),
+                ),
+              ],
+              selected: {settings.timeFormat},
+              onSelectionChanged: (s) => controller.setTimeFormat(s.first),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              settings.timeFormat == TimeFormatPreference.system
+                  ? 'Follows your phone’s setting · e.g. '
+                        '${formatTime(context, _sampleTime)}'
+                  : 'e.g. ${formatTime(context, _sampleTime)}',
+              key: const Key('time-format-example'),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           const Divider(height: 32),
