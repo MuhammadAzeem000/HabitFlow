@@ -3,16 +3,13 @@ import 'package:go_router/go_router.dart';
 
 import '../features/calendar/presentation/calendar_screen.dart';
 import '../features/dashboard/presentation/home_screen.dart';
+import '../features/habits/presentation/habit_editor_screen.dart';
 import '../features/habits/presentation/habits_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../shared/widgets/app_shell.dart';
+import 'routes.dart';
 
-abstract final class Routes {
-  static const home = '/';
-  static const habits = '/habits';
-  static const calendar = '/calendar';
-  static const settings = '/settings';
-}
+export 'routes.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
@@ -54,6 +51,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      // Full-screen routes (above the bottom navigation).
+      GoRoute(
+        path: Routes.newHabit,
+        builder: (context, state) => const HabitEditorScreen(),
+      ),
+      GoRoute(
+        path: Routes.editHabitPattern,
+        builder: (context, state) =>
+            HabitEditorScreen(habitId: state.pathParameters['id']),
       ),
     ],
   );

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:habitflow/app/app.dart';
 import 'package:habitflow/core/database/app_database.dart';
-import 'package:habitflow/core/database/database_providers.dart';
 import 'package:habitflow/core/utilities/local_day.dart';
 import 'package:habitflow/features/habits/data/habit_repository.dart';
 import 'package:habitflow/features/habits/domain/habit_draft.dart';
-import 'package:habitflow/features/settings/application/settings_controller.dart';
 import 'package:habitflow/features/settings/data/settings_repository.dart';
 
+import 'helpers/pump_app.dart';
 import 'helpers/test_database.dart';
 
 void main() {
@@ -18,26 +15,10 @@ void main() {
   setUp(() => db = createTestDatabase());
   tearDown(() => db.close());
 
-  Future<void> pumpApp(WidgetTester tester) async {
-    final settings = await tester.runAsync(() => SettingsRepository(db).load());
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          appDatabaseProvider.overrideWithValue(db),
-          initialSettingsProvider.overrideWithValue(settings!),
-        ],
-        child: const HabitFlowApp(),
-      ),
-    );
-    // Let the local database stream deliver its first result.
-    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-    await tester.pumpAndSettle();
-  }
-
   testWidgets('launches to Today with an empty state from local data', (
     tester,
   ) async {
-    await pumpApp(tester);
+    await pumpApp(tester, db);
     expect(find.text('No habits yet'), findsOneWidget);
     expect(find.byType(NavigationBar), findsOneWidget);
   });
@@ -52,12 +33,12 @@ void main() {
         ),
       ),
     );
-    await pumpApp(tester);
+    await pumpApp(tester, db, clock: () => DateTime(2026, 11, 9, 9));
     expect(find.text('Drink water'), findsOneWidget);
   });
 
   testWidgets('navigates between all tabs', (tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, db);
     for (final (tab, title) in [
       ('Habits', 'Manage your habits'),
       ('Calendar', 'Your history'),
@@ -71,11 +52,11 @@ void main() {
   });
 
   testWidgets('theme choice applies immediately and persists', (tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, db);
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Dark'));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.themeMode, ThemeMode.dark);
