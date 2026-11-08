@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/enums.dart';
+import '../../../core/notifications/reminder_service.dart';
 import '../../../core/utilities/time_format.dart';
 import '../application/settings_controller.dart';
 
@@ -44,6 +45,21 @@ class SettingsScreen extends ConsumerWidget {
               selected: {settings.theme},
               onSelectionChanged: (s) => controller.setTheme(s.first),
             ),
+          ),
+          const _SectionHeader('Reminders'),
+          SwitchListTile(
+            secondary: const Icon(Icons.notifications_outlined),
+            title: const Text('Habit reminders'),
+            subtitle: const Text(
+              'Only for habits where you set a reminder time',
+            ),
+            value: settings.notificationsEnabled,
+            onChanged: (on) async {
+              await controller.setNotificationsEnabled(enabled: on);
+              if (on) {
+                await ref.read(reminderServiceProvider).requestPermission();
+              }
+            },
           ),
           const _SectionHeader('Time format'),
           Padding(

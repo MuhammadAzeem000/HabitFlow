@@ -39,6 +39,9 @@ void main() {
     expect(find.text('Every day · 3-day streak'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('complete-Read')));
+    // The tick itself lands on the next frame (see instant_completion_test);
+    // statistics derived from it follow within one more frame.
+    await tester.pump();
     await tester.pump();
     expect(find.text('Every day · 4-day streak'), findsOneWidget);
   });
