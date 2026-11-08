@@ -6,6 +6,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
 import '../../../core/utilities/current_day.dart';
 import '../../../core/utilities/local_day.dart';
+import '../../tracking/presentation/habit_stats_summary.dart';
 import '../domain/habit_appearance.dart';
 import '../domain/habit_draft.dart';
 import '../domain/habit_schedule.dart';
@@ -193,6 +194,7 @@ class _HabitEditorScreenState extends ConsumerState<HabitEditorScreen> {
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(labelText: 'Note (optional)'),
           ),
+          if (_isEditing) HabitStatsSummary(habitId: widget.habitId!),
           const _Section('Icon'),
           Wrap(
             spacing: 8,

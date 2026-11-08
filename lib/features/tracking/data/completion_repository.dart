@@ -33,6 +33,9 @@ class CompletionRepository {
         .watch();
   }
 
+  /// Every stored record (for statistics).
+  Stream<List<HabitCompletion>> watchAll() => _db.select(_table).watch();
+
   Future<List<HabitCompletion>> getForHabit(String habitId) {
     return (_db.select(_table)
           ..where((c) => c.habitId.equals(habitId))

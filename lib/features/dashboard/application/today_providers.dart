@@ -6,14 +6,19 @@ import '../../../core/database/database_providers.dart';
 import '../../../core/utilities/current_day.dart';
 import '../../habits/application/habit_providers.dart';
 import '../../tracking/application/completion_controller.dart';
+import '../../tracking/application/stats_providers.dart';
+import '../../tracking/domain/streak.dart';
 
 /// A habit scheduled today, with its state for today (null = not done yet).
 @immutable
 class TodayEntry {
-  const TodayEntry({required this.habit, this.status});
+  const TodayEntry({required this.habit, this.status, this.streak});
 
   final Habit habit;
   final CompletionStatus? status;
+
+  /// Null while statistics are still loading.
+  final Streak? streak;
 
   bool get isDone => status == CompletionStatus.done;
   bool get isRestDay => status == CompletionStatus.skipped;
@@ -57,6 +62,8 @@ final todayCompletionsProvider = StreamProvider<List<HabitCompletion>>((ref) {
 /// Optimistic (not yet stored) taps take precedence over stored state.
 final todayEntriesProvider = Provider<AsyncValue<List<TodayEntry>>>((ref) {
   final pending = ref.watch(completionControllerProvider);
+  // Statistics are a bonus: never hold the list back waiting for them.
+  final streaks = ref.watch(streaksProvider).value ?? const {};
   return combineAsync(
     ref.watch(todaysHabitsProvider),
     ref.watch(todayCompletionsProvider),
@@ -69,6 +76,7 @@ final todayEntriesProvider = Provider<AsyncValue<List<TodayEntry>>>((ref) {
             status: pending.containsKey(h.id)
                 ? pending[h.id]!.status
                 : byHabit[h.id],
+            streak: streaks[h.id],
           ),
       ];
     },

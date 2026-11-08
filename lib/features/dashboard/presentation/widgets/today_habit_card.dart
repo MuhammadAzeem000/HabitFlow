@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../habits/domain/habit_appearance.dart';
 import '../../../habits/domain/habit_schedule.dart';
 import '../../../habits/presentation/widgets/habit_avatar.dart';
+import '../../../tracking/domain/streak.dart';
 import '../../application/today_providers.dart';
 
 /// A habit on the Today list with a large completion button.
@@ -25,9 +26,17 @@ class TodayHabitCard extends StatelessWidget {
     final theme = Theme.of(context);
     final habit = entry.habit;
     final color = habitColorFor(habit.color);
-    final subtitle = entry.isRestDay
-        ? 'Rest day'
-        : describeSchedule(HabitSchedule.fromHabit(habit));
+    final schedule = describeSchedule(HabitSchedule.fromHabit(habit));
+    final streak = entry.streak;
+    final showStreak =
+        streak != null &&
+        (streak.unit == StreakUnit.weeks
+            ? streak.current >= 1
+            : streak.current >= 2);
+    final subtitle = [
+      if (entry.isRestDay) 'Rest day' else schedule,
+      if (showStreak) streak.label,
+    ].join(' · ');
 
     return Card(
       clipBehavior: Clip.antiAlias,

@@ -45,8 +45,16 @@ Duration Function() spacedTapClock() {
   return () => Duration(seconds: ++ticks);
 }
 
-/// Scrolls [finder] into view, then taps it.
+/// Scrolls [finder] into view (building it first if a lazy list hasn't
+/// yet), then taps it.
 Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+  if (finder.evaluate().isEmpty) {
+    await tester.scrollUntilVisible(
+      finder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+  }
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
   await tester.tap(finder);
@@ -54,9 +62,14 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
 }
 
 /// Lets database work and streams complete, then settles animations.
+///
+/// Drift runs queries outside the fake-async test zone, so each round gives
+/// real time for pending queries and stream updates before pumping frames.
 Future<void> settle(WidgetTester tester) async {
-  for (var i = 0; i < 3; i++) {
-    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+  for (var i = 0; i < 6; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
     await tester.pump();
   }
   await tester.pumpAndSettle();
