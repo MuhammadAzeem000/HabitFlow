@@ -86,6 +86,12 @@ Future<bool> choosePauseAndApply(
   Habit habit,
 ) async {
   final today = ref.read(currentDayProvider);
+  // If today is already done, keep it: the pause starts tomorrow.
+  final doneToday =
+      await ref.read(completionRepositoryProvider).statusOn(habit.id, today) ==
+      CompletionStatus.done;
+  if (!context.mounted) return false;
+  final start = doneToday ? today.addDays(1) : today;
   final until = await showModalBottomSheet<LocalDay>(
     context: context,
     showDragHandle: true,
@@ -115,7 +121,7 @@ Future<bool> choosePauseAndApply(
             ListTile(
               leading: const Icon(Icons.pause_circle_outline),
               title: Text(label),
-              onTap: () => Navigator.pop(context, today.addDays(days - 1)),
+              onTap: () => Navigator.pop(context, start.addDays(days - 1)),
             ),
           ListTile(
             leading: const Icon(Icons.event_outlined),
@@ -124,8 +130,8 @@ Future<bool> choosePauseAndApply(
               final navigator = Navigator.of(context);
               final picked = await showDatePicker(
                 context: context,
-                initialDate: today.addDays(7).startOfDay,
-                firstDate: today.startOfDay,
+                initialDate: start.addDays(6).startOfDay,
+                firstDate: start.startOfDay,
                 lastDate: today.addDays(365).startOfDay,
                 helpText: 'Pause through',
               );
@@ -142,13 +148,18 @@ Future<bool> choosePauseAndApply(
 
   final repo = ref.read(habitRepositoryProvider);
   final messenger = ScaffoldMessenger.of(context);
-  await repo.pause(habit.id, from: today, until: until);
+  await repo.pause(habit.id, from: start, until: until);
   messenger
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
         content: Text(
-          '“${habit.name}” ${pausedUntilLabel(until).toLowerCase()}.',
+          doneToday
+              ? '“${habit.name}” is paused from tomorrow until '
+                    '${DateFormat.MMMEd().format(until.startOfDay)}. '
+                    'Today stays done.'
+              : '“${habit.name}” is paused until '
+                    '${DateFormat.MMMEd().format(until.startOfDay)}.',
         ),
         action: SnackBarAction(
           label: 'Undo',

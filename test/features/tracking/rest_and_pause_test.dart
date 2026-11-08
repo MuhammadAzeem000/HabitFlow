@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habitflow/core/database/app_database.dart';
 import 'package:habitflow/core/utilities/local_day.dart';
@@ -87,7 +88,7 @@ void main() {
     await tester.longPress(find.text('Read'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Pause habit…'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     await tester.tap(find.text('1 week'));
     await settle(tester);
 
@@ -131,11 +132,52 @@ void main() {
     await tester.longPress(find.text('Read'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Pause habit…'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     await tester.tapAt(const Offset(10, 10)); // tap the scrim
     await settle(tester);
 
     expect(find.text('Read'), findsOneWidget);
     expect((await storedRead(tester)).pausedUntil, isNull);
+  });
+
+  testWidgets('pausing a habit already done today starts tomorrow', (
+    tester,
+  ) async {
+    await seedAndPump(tester);
+    await tester.tap(find.byKey(const Key('complete-Read')));
+    await settle(tester);
+    expect(find.text('1 of 2 done'), findsOneWidget);
+
+    await tester.longPress(find.text('Read'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pause habit…'));
+    await settle(tester);
+    await tester.tap(find.text('1 week'));
+    await settle(tester);
+
+    // Today's check-in stays visible and counted.
+    expect(find.text('Read'), findsOneWidget);
+    expect(find.text('1 of 2 done'), findsOneWidget);
+    expect(
+      find.text(
+        '“Read” is paused from tomorrow until Mon, Nov 16. Today stays done.',
+      ),
+      findsOneWidget,
+    );
+    final habit = await storedRead(tester);
+    expect(habit.pausedFrom, '2026-11-10');
+    expect(habit.pausedUntil, '2026-11-16');
+  });
+
+  testWidgets('pause confirmation keeps normal date casing', (tester) async {
+    await seedAndPump(tester);
+    await tester.longPress(find.text('Read'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pause habit…'));
+    await settle(tester);
+    await tester.tap(find.text('3 days'));
+    await settle(tester);
+
+    expect(find.text('“Read” is paused until Wed, Nov 11.'), findsOneWidget);
   });
 }
