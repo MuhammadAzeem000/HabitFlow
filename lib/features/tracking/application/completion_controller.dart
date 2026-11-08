@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
 import '../../../core/utilities/current_day.dart';
+import '../../../core/utilities/perf_metrics.dart';
 import '../../dashboard/application/today_providers.dart';
 
 /// An optimistic state for one habit today, shown until the database
@@ -73,6 +74,7 @@ class CompletionController extends Notifier<Map<String, PendingCompletion>> {
     state = {...state, habitId: PendingCompletion(status)};
     _inFlight[habitId] = (_inFlight[habitId] ?? 0) + 1;
 
+    final timer = CompletionTimer(status?.name ?? 'cleared');
     final previous = _queues[habitId] ?? Future<void>.value();
     final write = previous
         .catchError((Object _) {})
@@ -84,7 +86,10 @@ class CompletionController extends Notifier<Map<String, PendingCompletion>> {
     _queues[habitId] = write;
 
     return write.then(
-      (_) => _finish(habitId, failed: false),
+      (_) {
+        timer.stored();
+        _finish(habitId, failed: false);
+      },
       onError: (Object error, StackTrace stack) {
         _finish(habitId, failed: true);
         Error.throwWithStackTrace(error, stack);
