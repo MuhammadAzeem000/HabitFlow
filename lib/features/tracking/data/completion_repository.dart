@@ -33,6 +33,17 @@ class CompletionRepository {
         .watch();
   }
 
+  /// The stored state of [habitId] on [day], or null if none.
+  Future<CompletionStatus?> statusOn(String habitId, LocalDay day) async {
+    final row =
+        await (_db.select(_table)..where(
+              (c) =>
+                  c.habitId.equals(habitId) & c.completionDate.equals(day.key),
+            ))
+            .getSingleOrNull();
+    return row?.status;
+  }
+
   /// Every stored record (for statistics).
   Stream<List<HabitCompletion>> watchAll() => _db.select(_table).watch();
 
