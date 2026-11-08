@@ -9,6 +9,7 @@ import '../features/habits/presentation/habits_screen.dart';
 import '../features/settings/presentation/plans_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../shared/widgets/app_shell.dart';
+import '../shared/widgets/snackbar_route_observer.dart';
 import 'routes.dart';
 
 export 'routes.dart';
@@ -16,6 +17,7 @@ export 'routes.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     initialLocation: Routes.home,
+    observers: [SnackBarRouteObserver()],
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(navigationShell: shell),
