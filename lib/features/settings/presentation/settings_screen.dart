@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
+import '../../../core/ads/ad_policy.dart';
+import '../../../core/ads/ad_slot.dart';
 import '../../../core/database/enums.dart';
 import '../../../core/notifications/reminder_service.dart';
 import '../../../core/utilities/time_format.dart';
@@ -113,6 +115,7 @@ class SettingsScreen extends ConsumerWidget {
             title: Text('Your data stays on this device'),
             subtitle: Text('HabitFlow works fully offline. No account needed.'),
           ),
+          const AdSlot(AdPlacement.settingsFooter),
         ],
       ),
     );

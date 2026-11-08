@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/ads/ad_policy.dart';
+import '../../../core/ads/ad_slot.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utilities/current_day.dart';
 import '../../../core/utilities/local_day.dart';
@@ -92,6 +94,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 history: d.history,
               ),
               _Legend(single: selected != null),
+              const AdSlot(AdPlacement.calendarFooter),
             ],
           );
         },
