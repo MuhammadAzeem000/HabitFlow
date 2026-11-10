@@ -19,7 +19,7 @@ val keystoreProperties = Properties().apply {
 val hasReleaseSigning = keystorePropertiesFile.exists()
 
 android {
-    namespace = "com.habitflow.app"
+    namespace = "com.habitflow.productivity"
     // flutter_local_notifications 23 requires compileSdk 37+.
     compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
@@ -32,7 +32,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.habitflow.app"
+        applicationId = "com.habitflow.productivity"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
