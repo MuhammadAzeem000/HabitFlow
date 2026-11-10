@@ -29,7 +29,7 @@ database migration), then:
       reorder habits, open Calendar — everything works.
 - [ ] **Restart** (swipe the app away, reopen): all of the above is kept.
 - [ ] **Cold start feels fast** (no spinner, no blank wait beyond the launch
-      screen). Optional: `adb shell am start -S -W -n com.habitflow.app/.MainActivity`
+      screen). Optional: `adb shell am start -S -W -n com.habitflow.productivity/.MainActivity`
       and note `TotalTime`.
 - [ ] **Completion:** the tick appears instantly; a fast double tap counts
       once.
