@@ -75,4 +75,3 @@ address with a new effective date.
 Questions about this policy or the app:
 
 - Email: azeemk0314@gmail.com
-- Phone: +92 314 3946966
